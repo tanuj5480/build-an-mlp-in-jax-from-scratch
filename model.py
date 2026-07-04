@@ -16,26 +16,18 @@ def make_prng_key(seed):
     return jax.random.PRNGKey(seed)
 
 # Step 2 - split_prng_key
-import jax
-
 def split_prng_key(key, num):
     # TODO: split `key` into `num` independent subkeys and return them as a (num, 2) array.
     key = make_prng_key(0)
     return jax.random.split(key, num)
 
 # Step 3 - sample_normal_matrix
-import jax
-import jax.numpy as jnp
-
 def sample_normal_matrix(key, shape):
     # TODO: return a jnp array of the given shape with i.i.d. N(0,1) samples drawn from key
     # key = make_prng_key(0)
     return jax.random.normal(key, shape)
 
 # Step 4 - sample_input_features
-import jax
-import jax.numpy as jnp
-
 def sample_input_features(key, batch_size, num_features):
     """Sample a (batch_size, num_features) standard-normal feature batch."""
     # TODO: draw a batch of random input feature vectors from the PRNG key
@@ -54,9 +46,6 @@ def one_hot_encode_labels(labels, num_classes):
     return (jnp.array((labels[:, None]== jnp.arange(num_classes)[None,:]), dtype=float))
 
 # Step 7 - init_linear_layer
-import jax
-import jax.numpy as jnp
-
 def init_linear_layer(key, in_dim, out_dim, scale=0.1):
     """Return {'W': (in_dim, out_dim), 'b': (out_dim,)} for one dense layer."""
     # TODO: sample W from a scaled normal and set b to zeros, return as a dict.
@@ -70,10 +59,7 @@ def init_mlp_params(key, layer_sizes, scale=0.1):
     key_lst = split_prng_key(key, len(layer_sizes) - 1)
     lst= []
     for i in range(1,len(layer_sizes)):
-        if scale == 0.5:
-            lst.append(init_linear_layer(key_lst[i], layer_sizes[i-1], layer_sizes[i], scale=0.4))
-        else:
-            lst.append(init_linear_layer(key_lst[i], layer_sizes[i-1], layer_sizes[i], scale=scale))
+        lst.append(init_linear_layer(key_lst[i], layer_sizes[i-1], layer_sizes[i], scale=scale))
     return lst
 
 # Step 9 - linear_forward
@@ -84,9 +70,6 @@ def linear_forward(x, layer_params):
     return out
 
 # Step 10 - relu_activation
-import jax.numpy as jnp
-
-
 def relu_activation(x):
     """Apply the ReLU activation elementwise to a JAX array."""
     # TODO: return an array of the same shape with negatives replaced by zero.
@@ -97,15 +80,10 @@ def relu_activation(x):
     return new_x
 
 # Step 11 - softmax_probabilities
-import jax.numpy as jnp
-
 def softmax_probabilities(logits):
     # TODO: convert logits into a numerically stable softmax along the last axis
     
     exp = jnp.exp(logits - jnp.max(logits, axis=-1, keepdims=True ))
-    # max_logits = jnp.max(exp, axis=1)
-
-    # new_exp = exp - max_logits
     total = jnp.sum(exp, axis=-1, keepdims=True )
     return exp/total
 
@@ -127,33 +105,24 @@ def log_softmax_logits(logits):
     return jnp.log(softmax_probabilities(logits))
 
 # Step 14 - cross_entropy_loss
-import jax.numpy as jnp
 def cross_entropy_loss(logits, one_hot_targets):
     # TODO: return the mean cross-entropy between logits and one-hot targets
     m, n = one_hot_targets.shape
     return (-1.0/m)*jnp.sum(log_softmax_logits(logits) * one_hot_targets)
 
 # Step 15 - classification_accuracy
-import jax.numpy as jnp
-
 def classification_accuracy(logits, labels):
     """Fraction of rows where argmax(logits) equals the integer label."""
     # TODO: compute predicted classes from logits and compare to labels
     return jnp.mean(jnp.argmax(logits, axis=-1)==labels)
 
 # Step 16 - loss_fn_of_params
-import jax
-import jax.numpy as jnp
-
 def loss_fn_of_params(params, x, one_hot_targets):
     # TODO: return scalar cross-entropy loss as a function of params, ready for jax.grad
     logits = mlp_forward(params, x)
     return cross_entropy_loss(logits, one_hot_targets)
 
 # Step 17 - compute_param_grads
-import jax
-import jax.numpy as jnp
-
 def compute_param_grads(params, x, one_hot_targets):
     # TODO: return grad of loss_fn_of_params w.r.t. params using jax.grad
     grad_fn = jax.grad(loss_fn_of_params, 0)
@@ -161,9 +130,6 @@ def compute_param_grads(params, x, one_hot_targets):
     return grads
 
 # Step 18 - sgd_update_params
-import jax
-import jax.numpy as jnp
-
 def sgd_update_params(params, grads, learning_rate):
     # TODO: apply one SGD step to every parameter using its gradient and a learning rate
     new_params = []
@@ -175,9 +141,6 @@ def sgd_update_params(params, grads, learning_rate):
     return new_params
 
 # Step 19 - training_step
-import jax
-import jax.numpy as jnp
-
 def training_step(params, x, one_hot_targets, learning_rate):
     # TODO: compute current loss + grads via the upstream helpers, then SGD-update params.
     loss = loss_fn_of_params(params, x, one_hot_targets)
